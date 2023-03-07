@@ -16,38 +16,40 @@ const execAsync = (method, ...args) => new Promise((resolve, reject) => {
 class Agent {
     constructor() {
         this._isNegotiating = false;
-        const pc = new RTCPeerConnection({
-            // @ts-expect-error
-            sdpSemantics: "unified-plan",
-        });
-        this._pc = pc;
-        pc.onconnectionstatechange = (event) => {
-            switch (pc.connectionState) {
-                            }
-        };
-        pc.onicecandidate = async (event) => {
-            if (event.candidate) {
-                await execAsync("agentCandidate", event.candidate);
-            }
-        };
-        pc.onnegotiationneeded = () => {
-        };
-        pc.onsignalingstatechange = () => {
-            if (pc.signalingState === "stable") {
-                this._isNegotiating = false;
-            }
-        };
-        pc.ontrack = (event) => {
-            if (event.streams && event.streams[0]) {
-                const stream = event.streams[0];
-                this._stream = stream;
-            }
-            else {
-                const inboundStream = new MediaStream();
-                inboundStream.addTrack(event.track);
-                this._stream = inboundStream;
-            }
-        };
+        if (typeof(RTCPeerConnection) !== 'undefined') {
+            const pc = new RTCPeerConnection({
+                // @ts-expect-error
+                sdpSemantics: "unified-plan",
+            });
+            this._pc = pc;
+            pc.onconnectionstatechange = (event) => {
+                switch (pc.connectionState) {
+                                }
+            };
+            pc.onicecandidate = async (event) => {
+                if (event.candidate) {
+                    await execAsync("agentCandidate", event.candidate);
+                }
+            };
+            pc.onnegotiationneeded = () => {
+            };
+            pc.onsignalingstatechange = () => {
+                if (pc.signalingState === "stable") {
+                    this._isNegotiating = false;
+                }
+            };
+            pc.ontrack = (event) => {
+                if (event.streams && event.streams[0]) {
+                    const stream = event.streams[0];
+                    this._stream = stream;
+                }
+                else {
+                    const inboundStream = new MediaStream();
+                    inboundStream.addTrack(event.track);
+                    this._stream = inboundStream;
+                }
+            };
+        }
         this._unregisterEvents = this._registerEvents();
     }
     _registerEvents() {
